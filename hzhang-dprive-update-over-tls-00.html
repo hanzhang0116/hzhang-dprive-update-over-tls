@@ -376,15 +376,6 @@
   <link href="#rfc.toc" rel="Contents"/>
 <link href="#rfc.section.1" rel="Chapter" title="1 Introduction"/>
 <link href="#rfc.section.3" rel="Chapter" title="3 Terminology"/>
-<link href="#rfc.section.12" rel="Chapter" title="12 Implementation Considerations"/>
-<link href="#rfc.section.14" rel="Chapter" title="14 IANA Considerations"/>
-<link href="#rfc.section.15" rel="Chapter" title="15 Security Considerations"/>
-<link href="#rfc.section.16" rel="Chapter" title="16 Acknowledgements"/>
-<link href="#rfc.section.17" rel="Chapter" title="17 Contributors"/>
-<link href="#rfc.section.18" rel="Chapter" title="18 Changelog"/>
-<link href="#rfc.references" rel="Chapter" title="19 References"/>
-<link href="#rfc.references.1" rel="Chapter" title="19.1 Normative References"/>
-<link href="#rfc.references.2" rel="Chapter" title="19.2 Informative References"/>
 <link href="#rfc.authors" rel="Chapter"/>
 
 
@@ -394,8 +385,8 @@
   <meta name="dct.creator" content="TBD" />
   <meta name="dct.identifier" content="urn:ietf:id:draft-ietf-dprive-update-over-tls-00" />
   <meta name="dct.issued" scheme="ISO8601" content="2021-2-15" />
-  <meta name="dct.abstract" content="DNS dynamic updates are transmitted in clear text, which gives attackers the opportunity to collect the content of updates to a zone by eavesdropping on network connections. RFC3007 defines a means to secure dynamic updates, allowing only authorized sources to make changes to a zone’s contents, but it does not add confidentiality. This document specifies the use of TLS, rather than clear text, to prevent zone content collection via passive monitoring of dynamic updates." />
-  <meta name="description" content="DNS dynamic updates are transmitted in clear text, which gives attackers the opportunity to collect the content of updates to a zone by eavesdropping on network connections. RFC3007 defines a means to secure dynamic updates, allowing only authorized sources to make changes to a zone’s contents, but it does not add confidentiality. This document specifies the use of TLS, rather than clear text, to prevent zone content collection via passive monitoring of dynamic updates." />
+  <meta name="dct.abstract" content="DNS dynamic updates are transmitted in clear text, which gives attackers the opportunity to collect the content of updates to a zone by eavesdropping on network connections. RFC3007 defines a means to secure dynamic updates, allowing only authorized sources to make changes to a zone’s contents, but it does not add confidentiality. This document specifies the use of TLS, rather than clear text, to prevent zone content collection via passive monitoring of dynamic updates: dynamic updates over TLS (DUoT)." />
+  <meta name="description" content="DNS dynamic updates are transmitted in clear text, which gives attackers the opportunity to collect the content of updates to a zone by eavesdropping on network connections. RFC3007 defines a means to secure dynamic updates, allowing only authorized sources to make changes to a zone’s contents, but it does not add confidentiality. This document specifies the use of TLS, rather than clear text, to prevent zone content collection via passive monitoring of dynamic updates: dynamic updates over TLS (DUoT)." />
 
 </head>
 
@@ -443,7 +434,7 @@
   <h1 id="rfc.abstract">
   <a href="#rfc.abstract">Abstract</a>
 </h1>
-<p> DNS dynamic updates are transmitted in clear text, which gives attackers the opportunity to collect the content of updates to a zone by eavesdropping on network connections. RFC3007 defines a means to secure dynamic updates, allowing only authorized sources to make changes to a zone's contents, but it does not add confidentiality. This document specifies the use of TLS, rather than clear text, to prevent zone content collection via passive monitoring of dynamic updates. </p>
+<p> DNS dynamic updates are transmitted in clear text, which gives attackers the opportunity to collect the content of updates to a zone by eavesdropping on network connections. RFC3007 defines a means to secure dynamic updates, allowing only authorized sources to make changes to a zone's contents, but it does not add confidentiality. This document specifies the use of TLS, rather than clear text, to prevent zone content collection via passive monitoring of dynamic updates: dynamic updates over TLS (DUoT). </p>
 <h1 id="rfc.status">
   <a href="#rfc.status">Status of This Memo</a>
 </h1>
@@ -465,17 +456,6 @@
   	<li>1.   <a href="#rfc.section.1">Introduction</a></li>
 <li>2.   <a href="#rfc.section.2">Document work via GitHub</a></li>
 <li>3.   <a href="#rfc.section.3">Terminology</a></li>
-<li>4.   <a href="#rfc.section.4">Use Cases for XFR-over-TLS</a></li>
-<ul><li>4.1.   <a href="#rfc.section.4.1">Threat model</a></li>
-<li>12.   <a href="#rfc.section.12">Implementation Considerations</a></li>
-<li>14.   <a href="#rfc.section.14">IANA Considerations</a></li>
-<li>15.   <a href="#rfc.section.15">Security Considerations</a></li>
-<li>16.   <a href="#rfc.section.16">Acknowledgements</a></li>
-<li>17.   <a href="#rfc.section.17">Contributors</a></li>
-<li>18.   <a href="#rfc.section.18">Changelog</a></li>
-<li>19.   <a href="#rfc.references">References</a></li>
-<ul><li>19.1.   <a href="#rfc.references.1">Normative References</a></li>
-<li>19.2.   <a href="#rfc.references.2">Informative References</a></li>
 </ul></ul><li><a href="#rfc.authors">Authors' Addresses</a></li>
 
 
@@ -490,21 +470,41 @@
 <p id="rfc.section.2.p.2">Privacy terminology is as described in Section 3 of <a href="#RFC6973">[RFC6973]</a>.  </p>
 <p id="rfc.section.2.p.3">DNS terminology is as described in <a href="#RFC8499">[RFC8499]</a>.  </p>
 
-<h1 id="rfc.section.12"><a href="#rfc.section.12">12.</a> <a href="#implementation-considerations" id="implementation-considerations">Implementation Considerations</a></h1>
+<h1 id="rfc.section.3"><a href="#rfc.section.3">3.</a> <a href="#specification" id="specification">Specification</a></h1>
+<p id="rfc.section.3.p.1"> <a href="#RFC2136">[RFC2136]</a> specifies that "An update transaction may be carried in a UDP datagram, if the request fits, or in a TCP connection". With dynamic updates over tls, all the dynamic updates should be transmitted in tcp. </p>
+
+<p id="rfc.section.3.p.2">For a dynamic update between two end points to be considered protected with DUoT all update requests and response for that zone MUST be sent over TLS connections where at a minimum: </p>
+<ul>
+  <li>the client MUST authenticate the server by use of an authentication domain name using a Strict Privacy Profile as described in <a href="#RFC8310">[RFC8310]</a></li>
+</ul>
+<p id="rfc.section.3.p.2">The server MAY also require a valid TSIG/SIG(0) signature, but this alone is not sufficient to authenticate the client or server.  </p>
+
+<h1 id="rfc.section.4"><a href="#rfc.section.4">4.</a> <a href="#authentication" id="authentication">Authentication</a></h1>
+<h1 id="rfc.section.4.1"><a href="#rfc.section.4.1">4.1.</a> <a href="#tsig" id="tsig">TSIG</a></h1>
+<h1 id="rfc.section.4.2"><a href="#rfc.section.4.2">4.2.</a> <a href="#sig0" id="sig0">SIG(0)</a></h1>
+<h1 id="rfc.section.4.3"><a href="#rfc.section.4.3">4.3.</a> <a href="#opportunistic-tls" id="opportunistic-tls">Opportunistic TLS</a></h1>
+<h1 id="rfc.section.4.4"><a href="#rfc.section.4.4">4.4.</a> <a href="#strict-tls" id="strict-tls">Strict TLS</a></h1>
+<h1 id="rfc.section.4.5"><a href="#rfc.section.4.5">4.5.</a> <a href="#mutual-tls" id="mutual-tls">Mutual TLS</a></h1>
+
+<h1 id="rfc.section.5"><a href="#rfc.section.5">5.</a> <a href="#forwarding" id="forwarding">Forwarding</a></h1>
+<p id="rfc.section.5.p.1">
+When a zone secondary forwards an UPDATE message upward toward the zone's primary server, the forwarder should try TLS first, then fall back to either UDP or TCP to forward the message, at the whim of the implementor. </p>
+
+<h1 id="rfc.section.6"><a href="#rfc.section.6">6.</a> <a href="#implementation-considerations" id="implementation-considerations">Implementation Considerations</a></h1>
 
 <p> </p>
-<h1 id="rfc.section.14"><a href="#rfc.section.14">14.</a> <a href="#iana-considerations" id="iana-considerations">IANA Considerations</a></h1>
-<h1 id="rfc.section.15"><a href="#rfc.section.15">15.</a> <a href="#security-considerations" id="security-considerations">Security Considerations</a></h1>
+<h1 id="rfc.section.7"><a href="#rfc.section.7">7.</a> <a href="#iana-considerations" id="iana-considerations">IANA Considerations</a></h1>
+<h1 id="rfc.section.8"><a href="#rfc.section.8">8.</a> <a href="#security-considerations" id="security-considerations">Security Considerations</a></h1>
 <p> </p>
-<p id="rfc.section.15.p.4">Security concerns of DoT are outlined in <a href="#RFC7858">[RFC7858]</a> and <a href="#RFC8310">[RFC8310]</a>.  </p>
-<h1 id="rfc.section.16"><a href="#rfc.section.16">16.</a> <a href="#acknowledgements" id="acknowledgements">Acknowledgements</a></h1>
-<h1 id="rfc.section.17"><a href="#rfc.section.17">17.</a> <a href="#contributors" id="contributors">Contributors</a></h1>
-<p id="rfc.section.17.p.1">Significant contributions to the document were made by: </p>
+<p id="rfc.section.8.p.1">Security concerns of DoT are outlined in <a href="#RFC7858">[RFC7858]</a> and <a href="#RFC8310">[RFC8310]</a>.  </p>
+<h1 id="rfc.section.9"><a href="#rfc.section.9">9.</a> <a href="#acknowledgements" id="acknowledgements">Acknowledgements</a></h1>
+<h1 id="rfc.section.10"><a href="#rfc.section.10">10.</a> <a href="#contributors" id="contributors">Contributors</a></h1>
+<p id="rfc.section.10.p.1">Significant contributions to the document were made by: </p>
 
 <p> </p>
-<h1 id="rfc.section.18"><a href="#rfc.section.18">18.</a> <a href="#changelog" id="changelog">Changelog</a></h1>
-<h1 id="rfc.references"><a href="#rfc.references">19.</a> References</h1>
-<h1 id="rfc.references.1"><a href="#rfc.references.1">19.1.</a> Normative References</h1>
+<h1 id="rfc.section.11"><a href="#rfc.section.11">11.</a> <a href="#changelog" id="changelog">Changelog</a></h1>
+<h1 id="rfc.references"><a href="#rfc.references">12.</a> References</h1>
+<h1 id="rfc.references.1"><a href="#rfc.references.1">12.1.</a> Normative References</h1>
 <table>
   <tbody>
     <tr>
