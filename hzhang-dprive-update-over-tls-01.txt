@@ -66,14 +66,14 @@ Table of Contents
 
    1.  Introduction  . . . . . . . . . . . . . . . . . . . . . . . .   2
    2.  Terminology . . . . . . . . . . . . . . . . . . . . . . . . .   3
-   3.  Specfication  . . . . . . . . . . . . . . . . . . . . . . . .   4
-   4.  Connection  . . . . . . . . . . . . . . . . . . . . . . . . .   4
+   3.  Dynamic Update threat model . . . . . . . . . . . . . . . . .   4
+   4.  Dynamic Update connection changes . . . . . . . . . . . . . .   4
      4.1.  Dynamic Update  . . . . . . . . . . . . . . . . . . . . .   4
      4.2.  Dynamic Update over TLS . . . . . . . . . . . . . . . . .   4
    5.  Authentication  . . . . . . . . . . . . . . . . . . . . . . .   5
      5.1.  TSIG/SIG(0) . . . . . . . . . . . . . . . . . . . . . . .   5
-     5.2.  >Opportunistic TLS  . . . . . . . . . . . . . . . . . . .   5
-     5.3.  >Mutual TLS . . . . . . . . . . . . . . . . . . . . . . .   5
+     5.2.  Opportunistic TLS . . . . . . . . . . . . . . . . . . . .   5
+     5.3.  Mutual TLS  . . . . . . . . . . . . . . . . . . . . . . .   5
    6.  Forwarding  . . . . . . . . . . . . . . . . . . . . . . . . .   5
    7.  Implementation Considerations . . . . . . . . . . . . . . . .   5
    8.  Acknowledgements  . . . . . . . . . . . . . . . . . . . . . .   5
@@ -173,7 +173,7 @@ Internet-Draft              Abbreviated Title                   May 2021
    Dynamic Update ove TLS (DUoT): This is a new term introduced in this
    draft to specify Dyamic Update over TLS.
 
-3.  Specfication
+3.  Dynamic Update threat model
 
    [RFC2136] specifies that "An update transaction may be carried in a
    UDP datagram, if the request fits, or in a TCP connection".  With
@@ -191,7 +191,7 @@ Internet-Draft              Abbreviated Title                   May 2021
    The server MAY also require a valid TSIG/SIG(0) signature, but this
    alone is not sufficient to authenticate the client or server.
 
-4.  Connection
+4.  Dynamic Update connection changes
 
 4.1.  Dynamic Update
 
@@ -243,9 +243,9 @@ Internet-Draft              Abbreviated Title                   May 2021
 
    TSIG description
 
-5.2.  >Opportunistic TLS
+5.2.  Opportunistic TLS
 
-5.3.  >Mutual TLS
+5.3.  Mutual TLS
 
 6.  Forwarding
 

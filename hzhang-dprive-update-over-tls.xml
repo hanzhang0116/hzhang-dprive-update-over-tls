@@ -132,8 +132,8 @@
     </t>
 
   </section>
-  <section anchor="specification" numbered="true" toc="default">
-    <name> Specfication</name>
+  <section anchor="threat-model" numbered="true" toc="default">
+    <name> Dynamic Update threat model</name>
     <t> <xref target="RFC2136"/> specifies that "An update transaction may be carried in a UDP datagram, if the request fits, or in a TCP connection". With dynamic updates over tls, all the dynamic updates should be transmitted in tcp. </t>
     <t> For a dynamic update between two end points to be considered protected with DUoT all update requests and response for that zone MUST be sent over TLS connections where at a minimum:  </t>
     <ul>
@@ -142,7 +142,7 @@
     <t> The server MAY also require a valid TSIG/SIG(0) signature, but this alone is not sufficient to authenticate the client or server.   </t>
   </section>
   <section anchor="connection" numbered="true" toc="default">
-    <name> Connection</name>
+    <name> Dynamic Update connection changes</name>
     <section numbered="true" toc="default">
       <name>Dynamic Update</name>
       <t><xref target="RFC2136"/> specifies that "An update transaction may be carried in a UDP datagram, if the request fits, or in a TCP connection". </t>
@@ -182,10 +182,10 @@
       <t>TSIG description</t>
       </section>
       <section numbered="true" toc="default">
-      <name>>Opportunistic TLS</name>
+      <name>Opportunistic TLS</name>
       </section>
       <section numbered="true" toc="default">
-      <name>>Mutual TLS</name>
+      <name>Mutual TLS</name>
       </section>
   </section>
   <section numbered="true" toc="default">
