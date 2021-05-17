@@ -4,7 +4,7 @@
 
 dprive                                                        Han. Zhang
 Internet-Draft                                                   P. Aras
-Intended status: Informational                                        S.
+Intended status: Informational                                     S. Qi
 Expires: 21 November 2021                                     Salesforce
                                                              20 May 2021
 
@@ -53,7 +53,7 @@ Copyright Notice
 
 
 
-Zhang & Aras            Expires 21 November 2021                [Page 1]
+Zhang, et al.           Expires 21 November 2021                [Page 1]
 
 Internet-Draft              Abbreviated Title                   May 2021
 
@@ -109,7 +109,7 @@ Table of Contents
 
 
 
-Zhang & Aras            Expires 21 November 2021                [Page 2]
+Zhang, et al.           Expires 21 November 2021                [Page 2]
 
 Internet-Draft              Abbreviated Title                   May 2021
 
@@ -165,7 +165,7 @@ Internet-Draft              Abbreviated Title                   May 2021
 
 
 
-Zhang & Aras            Expires 21 November 2021                [Page 3]
+Zhang, et al.           Expires 21 November 2021                [Page 3]
 
 Internet-Draft              Abbreviated Title                   May 2021
 
@@ -221,7 +221,7 @@ Internet-Draft              Abbreviated Title                   May 2021
 
 
 
-Zhang & Aras            Expires 21 November 2021                [Page 4]
+Zhang, et al.           Expires 21 November 2021                [Page 4]
 
 Internet-Draft              Abbreviated Title                   May 2021
 
@@ -277,7 +277,7 @@ Internet-Draft              Abbreviated Title                   May 2021
 
 
 
-Zhang & Aras            Expires 21 November 2021                [Page 5]
+Zhang, et al.           Expires 21 November 2021                [Page 5]
 
 Internet-Draft              Abbreviated Title                   May 2021
 
@@ -333,7 +333,7 @@ Internet-Draft              Abbreviated Title                   May 2021
 
 
 
-Zhang & Aras            Expires 21 November 2021                [Page 6]
+Zhang, et al.           Expires 21 November 2021                [Page 6]
 
 Internet-Draft              Abbreviated Title                   May 2021
 
@@ -389,7 +389,7 @@ Internet-Draft              Abbreviated Title                   May 2021
 
 
 
-Zhang & Aras            Expires 21 November 2021                [Page 7]
+Zhang, et al.           Expires 21 November 2021                [Page 7]
 
 Internet-Draft              Abbreviated Title                   May 2021
 
@@ -406,7 +406,7 @@ Authors' Addresses
 
    Pallavi Aras
    Salesforce
-   Herndon, VA,
+   San Francisco, CA,
    United States
 
    Email: hzhang@salesforce.com
@@ -414,7 +414,7 @@ Authors' Addresses
 
    Sidan
    Salesforce
-   Herndon, VA,
+   San Francisco, CA,
    United States
 
    Email: sqi@salesforce.com
@@ -445,4 +445,4 @@ Authors' Addresses
 
 
 
-Zhang & Aras            Expires 21 November 2021                [Page 8]
+Zhang, et al.           Expires 21 November 2021                [Page 8]
