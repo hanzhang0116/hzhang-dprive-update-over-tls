@@ -200,8 +200,8 @@ Internet-Draft              Abbreviated Title                   May 2021
 
             Dynamic Update Requestor          Primary/Forwarding Server
             |            DUR Request            |
-            | --------------------------------&gt; |  UDP (or part of
-            | &lt;-------------------------------- |  a TCP session)
+            | --------------------------------- |  UDP (or part of
+            | --------------------------------- |  a TCP session)
             |           DUR Response            |
 
 
@@ -228,7 +228,7 @@ Internet-Draft              Abbreviated Title                   May 2021
 
             Dynamic Update Requestor          Primary/Forwarding Server
             |            DUR Request            |
-            | --------------------------------&gt; |  TLS
+            | ----------------------------------|  TLS
             |           DUR Response            |
 
 
@@ -256,7 +256,7 @@ Internet-Draft              Abbreviated Title                   May 2021
 
                 Dynamic Forwarding Server          Primary Server
                 |            DUR Request            |
-                | --------------------------------&gt; |  TLS
+                | ----------------------------------|  TLS
                 |           DUR Response            |
 
 

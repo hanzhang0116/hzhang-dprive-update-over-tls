@@ -150,8 +150,8 @@
 
         Dynamic Update Requestor          Primary/Forwarding Server
         |            DUR Request            |
-        | --------------------------------&gt; |  UDP (or part of
-        | &lt;-------------------------------- |  a TCP session)
+        | --------------------------------- |  UDP (or part of
+        | --------------------------------- |  a TCP session)
         |           DUR Response            |
 
 
@@ -166,7 +166,7 @@
 
         Dynamic Update Requestor          Primary/Forwarding Server
         |            DUR Request            |
-        | --------------------------------&gt; |  TLS
+        | ----------------------------------|  TLS
         |           DUR Response            |
 
 
@@ -195,7 +195,7 @@
 
       Dynamic Forwarding Server          Primary Server
       |            DUR Request            |
-      | --------------------------------&gt; |  TLS
+      | ----------------------------------|  TLS
       |           DUR Response            |
 
 
