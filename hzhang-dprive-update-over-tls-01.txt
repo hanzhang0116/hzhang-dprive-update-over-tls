@@ -1,0 +1,448 @@
+
+
+
+
+dprive                                                        Han. Zhang
+Internet-Draft                                                   P. Aras
+Intended status: Informational                                        S.
+Expires: 21 November 2021                                     Salesforce
+                                                             20 May 2021
+
+
+                        Dynamic Updates over TLS
+                     draft-ietf-xml2rfc-template-06
+
+Abstract
+
+   DNS dynamic updates are transmitted in clear text, allowing attackers
+   the opportunity to collect the content of updates to a zone by
+   eavesdropping on network connections.  RFC3007 defines a means to
+   secure dynamic updates, allowing only authorized sources to make
+   changes to a zone's contents, but it does not add confidentiality.
+   This document specifies the use of TLS, rather than clear text, to
+   prevent zone content collection via passive monitoring of dynamic
+   updates: dynamic updatedates over TLS (DUoT).
+
+Status of This Memo
+
+   This Internet-Draft is submitted in full conformance with the
+   provisions of BCP 78 and BCP 79.
+
+   Internet-Drafts are working documents of the Internet Engineering
+   Task Force (IETF).  Note that other groups may also distribute
+   working documents as Internet-Drafts.  The list of current Internet-
+   Drafts is at https://datatracker.ietf.org/drafts/current/.
+
+   Internet-Drafts are draft documents valid for a maximum of six months
+   and may be updated, replaced, or obsoleted by other documents at any
+   time.  It is inappropriate to use Internet-Drafts as reference
+   material or to cite them other than as "work in progress."
+
+   This Internet-Draft will expire on 21 November 2021.
+
+Copyright Notice
+
+   Copyright (c) 2021 IETF Trust and the persons identified as the
+   document authors.  All rights reserved.
+
+   This document is subject to BCP 78 and the IETF Trust's Legal
+   Provisions Relating to IETF Documents (https://trustee.ietf.org/
+   license-info) in effect on the date of publication of this document.
+   Please review these documents carefully, as they describe your rights
+   and restrictions with respect to this document.  Code Components
+
+
+
+Zhang & Aras            Expires 21 November 2021                [Page 1]
+
+Internet-Draft              Abbreviated Title                   May 2021
+
+
+   extracted from this document must include Simplified BSD License text
+   as described in Section 4.e of the Trust Legal Provisions and are
+   provided without warranty as described in the Simplified BSD License.
+
+Table of Contents
+
+   1.  Introduction  . . . . . . . . . . . . . . . . . . . . . . . .   2
+   2.  Terminology . . . . . . . . . . . . . . . . . . . . . . . . .   3
+   3.  Specfication  . . . . . . . . . . . . . . . . . . . . . . . .   4
+   4.  Connection  . . . . . . . . . . . . . . . . . . . . . . . . .   4
+     4.1.  Dynamic Update  . . . . . . . . . . . . . . . . . . . . .   4
+     4.2.  Dynamic Update over TLS . . . . . . . . . . . . . . . . .   4
+   5.  Authentication  . . . . . . . . . . . . . . . . . . . . . . .   5
+     5.1.  TSIG/SIG(0) . . . . . . . . . . . . . . . . . . . . . . .   5
+     5.2.  >Opportunistic TLS  . . . . . . . . . . . . . . . . . . .   5
+     5.3.  >Mutual TLS . . . . . . . . . . . . . . . . . . . . . . .   5
+   6.  Forwarding  . . . . . . . . . . . . . . . . . . . . . . . . .   5
+   7.  Implementation Considerations . . . . . . . . . . . . . . . .   5
+   8.  Acknowledgements  . . . . . . . . . . . . . . . . . . . . . .   5
+   9.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .   6
+   10. Security Considerations . . . . . . . . . . . . . . . . . . .   6
+   11. Normative References  . . . . . . . . . . . . . . . . . . . .   6
+   Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .   8
+
+1.  Introduction
+
+   DNS privacy vulnerabilities, are discussed in detail in [RFC7626].
+   Stub client to recursive resolver query privacy is now standards
+   track for both DNS-over-TLS (DoT) [RFC7858] and DNS-over-HTTPS (DoH)
+   [RFC8484], and a proposal for DNS-over-QUIC is underway
+   [I-D.ietf-dprive-dnsoquic].  There is ongoing work on DNS privacy
+   requirements for exchanges between recursive resolvers and
+   authoritative servers [I-D.ietf-dprive-phase2-requirements] (TODO add
+   info about dot ALPN )
+
+   The contents of a zone could include sensitive information such as
+   names of persons or customer coprporations.  Best practice is not to
+   use personal information for domain names, but many such domain names
+   exist.  [RFC5155] specifies NSEC3, a mechanism to provide measures
+   against zone enumeration for DNSSEC signed zones, but it does not
+   address data obtained outside zone enumeration.
+   [I-D.draft-ietf-dprive-xfr-over-tls] prevents zone content collection
+   via passive monitoring of zone transfers: XFR-over-TLS (XoT).
+   However, besides XFR, a zone can also be updated by dynamic updates
+   that is specified in [RFC2136].
+
+
+
+
+
+
+Zhang & Aras            Expires 21 November 2021                [Page 2]
+
+Internet-Draft              Abbreviated Title                   May 2021
+
+
+   [RFC3007] defines means to secure dynamic updates using TSIG
+   [RFC8945] or SIG(0) [RFC2931], allowing only authorized sources to
+   make changes to a zone's contents.  Section 8.1.5 of NIST guide
+   [nist-guide] specifies restricting Dynamic Update transaction
+   Entities using IP-based ACL.  [RFC2931] recommends default UDP
+   transport for Dynamic Updates and has following recommendation for
+   TCP usage.
+
+   If the requestor used TCP, then the response will be sent back on the
+   requestor's open TCP
+
+   This document updates the recommendation of [RFC2931] to use DNS-
+   over-TLS [RFC7858] to prevent zone content collection from passive
+   monitoring of dynamic updates to a zone.
+
+2.  Terminology
+
+   The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
+   "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and
+   "OPTIONAL" in this document are to be interpreted as described in BCP
+   14 [RFC2119] and [RFC8174] when, and only when, they appear in all
+   capitals, as shown here.
+
+   Privacy terminology is as described in Section 3 of [RFC6973].
+
+   DNS terminology is as described in [RFC8499].  Note that as in
+   [RFC8499], the terms 'primary master' refers to a server that is at
+   the root of AXFR/IXFR depency graph and receives updates from UPDATE
+   transation.
+
+   Forwarding Server: This is formally defing the servers described i n
+   in [RFC2136]. for the terms 'forwarding' refers to a secondary that
+   forwards an UPDATE message upward toward the zone's primary master
+   server
+
+   DNS terminology is as described in [RFC2136].  Note that as in
+   [RFC2136], the terms 'forwarding' refers to a secondary that forwards
+   an UPDATE message upward toward the zone's primary master server
+
+   DoT: DNS-over-TLS as specified in [RFC7858]
+
+   Dynamic Update (DU): This is Dynamic Update as specified by [RFC2136]
+   which can occur over UDP/TCP.
+
+   Dynamic Update Requestor (DUR) : This is a new term introduced in
+   this draft and formally defines the "Requestor" specified in section
+   4 of [RFC2136] .
+
+
+
+
+Zhang & Aras            Expires 21 November 2021                [Page 3]
+
+Internet-Draft              Abbreviated Title                   May 2021
+
+
+   Dynamic Update ove TLS (DUoT): This is a new term introduced in this
+   draft to specify Dyamic Update over TLS.
+
+3.  Specfication
+
+   [RFC2136] specifies that "An update transaction may be carried in a
+   UDP datagram, if the request fits, or in a TCP connection".  With
+   dynamic updates over tls, all the dynamic updates should be
+   transmitted in tcp.
+
+   For a dynamic update between two end points to be considered
+   protected with DUoT all update requests and response for that zone
+   MUST be sent over TLS connections where at a minimum:
+
+   *  the client MUST authenticate the server by use of an
+      authentication domain name using a Strict Privacy Profile as
+      described in [RFC8310]
+
+   The server MAY also require a valid TSIG/SIG(0) signature, but this
+   alone is not sufficient to authenticate the client or server.
+
+4.  Connection
+
+4.1.  Dynamic Update
+
+   [RFC2136] specifies that "An update transaction may be carried in a
+   UDP datagram, if the request fits, or in a TCP connection".
+
+            Dynamic Update Requestor          Primary/Forwarding Server
+            |            DUR Request            |
+            | --------------------------------&gt; |  UDP (or part of
+            | &lt;-------------------------------- |  a TCP session)
+            |           DUR Response            |
+
+
+                Figure 1. Dynamic Update Mechanism
+
+
+                                  Figure 1
+
+4.2.  Dynamic Update over TLS
+
+   MUST use TLS and reuse existing TCP connections.  TCP Fast Open ,
+   edns keep alive.  Use "DOT ALPN.  Use TLS 1.3.
+
+
+
+
+
+
+
+Zhang & Aras            Expires 21 November 2021                [Page 4]
+
+Internet-Draft              Abbreviated Title                   May 2021
+
+
+            Dynamic Update Requestor          Primary/Forwarding Server
+            |            DUR Request            |
+            | --------------------------------&gt; |  TLS
+            |           DUR Response            |
+
+
+                Figure 2. Dynamic Update over TLS
+
+
+                                  Figure 2
+
+5.  Authentication
+
+5.1.  TSIG/SIG(0)
+
+   TSIG description
+
+5.2.  >Opportunistic TLS
+
+5.3.  >Mutual TLS
+
+6.  Forwarding
+
+   When a zone secondary forwards an UPDATE message upward toward the
+   zone's primary server, the forwarder should try TLS first, then fall
+   back to either UDP or TCP to forward the message, at the whim of the
+   implementor.
+
+                Dynamic Forwarding Server          Primary Server
+                |            DUR Request            |
+                | --------------------------------&gt; |  TLS
+                |           DUR Response            |
+
+
+                    Figure 3. Dynamic Update over TLS
+
+
+                                  Figure 3
+
+7.  Implementation Considerations
+
+   Reference implentation
+
+8.  Acknowledgements
+
+   Significant contributions to the document were made by:
+
+
+
+
+
+Zhang & Aras            Expires 21 November 2021                [Page 5]
+
+Internet-Draft              Abbreviated Title                   May 2021
+
+
+9.  IANA Considerations
+
+10.  Security Considerations
+
+11.  Normative References
+
+   [I-D.draft-ietf-dprive-xfr-over-tls]
+              Toorop, W., Dickinson, S., Sahib, S., Aras, P., and A.
+              Mankin, "DNS Zone Transfer-over-TLS", 20 January 2021,
+              <https://xml2rfc.tools.ietf.org/public/rfc/bibxml3/
+              reference.I-D.draft-ietf-dprive-xfr-over-tls-05.xml>.
+
+   [I-D.ietf-dprive-dnsoquic]
+              Huitema, C., Mankin, A., and S. Dickinson, "Specification
+              of DNS over Dedicated QUIC Connections", Work in Progress,
+              Internet-Draft, draft-ietf-dprive-dnsoquic-02, 22 February
+              2021, <https://tools.ietf.org/html/draft-ietf-dprive-
+              dnsoquic-02>.
+
+   [I-D.ietf-dprive-phase2-requirements]
+              Livingood, J., Mayrhofer, A., and B. Overeinder, "DNS
+              Privacy Requirements for Exchanges between Recursive
+              Resolvers and Authoritative Servers", Work in Progress,
+              Internet-Draft, draft-ietf-dprive-phase2-requirements-02,
+              2 November 2020, <https://tools.ietf.org/html/draft-ietf-
+              dprive-phase2-requirements-02>.
+
+   [nist-guide]
+              Chandramouli, R. and S. Rose, "Secure Domain Name System
+              (DNS) Deployment Guide", 2013,
+              <https://nvlpubs.nist.gov/nistpubs/SpecialPublications/
+              NIST.SP.800-81-2.pdf>.
+
+   [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate
+              Requirement Levels", BCP 14, RFC 2119,
+              DOI 10.17487/RFC2119, March 1997,
+              <https://www.rfc-editor.org/info/rfc2119>.
+
+   [RFC2136]  Vixie, P., Ed., Thomson, S., Rekhter, Y., and J. Bound,
+              "Dynamic Updates in the Domain Name System (DNS UPDATE)",
+              RFC 2136, DOI 10.17487/RFC2136, April 1997,
+              <https://www.rfc-editor.org/info/rfc2136>.
+
+   [RFC2931]  Eastlake 3rd, D., "DNS Request and Transaction Signatures
+              ( SIG(0)s )", RFC 2931, DOI 10.17487/RFC2931, September
+              2000, <https://www.rfc-editor.org/info/rfc2931>.
+
+
+
+
+
+Zhang & Aras            Expires 21 November 2021                [Page 6]
+
+Internet-Draft              Abbreviated Title                   May 2021
+
+
+   [RFC3007]  Wellington, B., "Secure Domain Name System (DNS) Dynamic
+              Update", RFC 3007, DOI 10.17487/RFC3007, November 2000,
+              <https://www.rfc-editor.org/info/rfc3007>.
+
+   [RFC5155]  Laurie, B., Sisson, G., Arends, R., and D. Blacka, "DNS
+              Security (DNSSEC) Hashed Authenticated Denial of
+              Existence", RFC 5155, DOI 10.17487/RFC5155, March 2008,
+              <https://www.rfc-editor.org/info/rfc5155>.
+
+   [RFC6973]  Cooper, A., Tschofenig, H., Aboba, B., Peterson, J.,
+              Morris, J., Hansen, M., and R. Smith, "Privacy
+              Considerations for Internet Protocols", RFC 6973,
+              DOI 10.17487/RFC6973, July 2013,
+              <https://www.rfc-editor.org/info/rfc6973>.
+
+   [RFC7626]  Bortzmeyer, S., "DNS Privacy Considerations", RFC 7626,
+              DOI 10.17487/RFC7626, August 2015,
+              <https://www.rfc-editor.org/info/rfc7626>.
+
+   [RFC7858]  Hu, Z., Zhu, L., Heidemann, J., Mankin, A., Wessels, D.,
+              and P. Hoffman, "Specification for DNS over Transport
+              Layer Security (TLS)", RFC 7858, DOI 10.17487/RFC7858, May
+              2016, <https://www.rfc-editor.org/info/rfc7858>.
+
+   [RFC8174]  Leiba, B., "Ambiguity of Uppercase vs Lowercase in RFC
+              2119 Key Words", BCP 14, RFC 8174, DOI 10.17487/RFC8174,
+              May 2017, <https://www.rfc-editor.org/info/rfc8174>.
+
+   [RFC8310]  Dickinson, S., Gillmor, D., and T. Reddy, "Usage Profiles
+              for DNS over TLS and DNS over DTLS", RFC 8310,
+              DOI 10.17487/RFC8310, March 2018,
+              <https://www.rfc-editor.org/info/rfc8310>.
+
+   [RFC8484]  Hoffman, P. and P. McManus, "DNS Queries over HTTPS
+              (DoH)", RFC 8484, DOI 10.17487/RFC8484, October 2018,
+              <https://www.rfc-editor.org/info/rfc8484>.
+
+   [RFC8499]  Hoffman, P., Sullivan, A., and K. Fujiwara, "DNS
+              Terminology", BCP 219, RFC 8499, DOI 10.17487/RFC8499,
+              January 2019, <https://www.rfc-editor.org/info/rfc8499>.
+
+   [RFC8945]  Dupont, F., Morris, S., Vixie, P., Eastlake 3rd, D.,
+              Gudmundsson, O., and B. Wellington, "Secret Key
+              Transaction Authentication for DNS (TSIG)", STD 93,
+              RFC 8945, DOI 10.17487/RFC8945, November 2020,
+              <https://www.rfc-editor.org/info/rfc8945>.
+
+
+
+
+
+Zhang & Aras            Expires 21 November 2021                [Page 7]
+
+Internet-Draft              Abbreviated Title                   May 2021
+
+
+Authors' Addresses
+
+   Han Zhang
+   Salesforce
+   Herndon, VA,
+   United States
+
+   Email: paras@salesforce.com
+
+
+   Pallavi Aras
+   Salesforce
+   Herndon, VA,
+   United States
+
+   Email: hzhang@salesforce.com
+
+
+   Sidan
+   Salesforce
+   Herndon, VA,
+   United States
+
+   Email: sqi@salesforce.com
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Zhang & Aras            Expires 21 November 2021                [Page 8]
