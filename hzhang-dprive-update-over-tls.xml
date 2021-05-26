@@ -1,0 +1,283 @@
+<?xml version='1.0' encoding='utf-8'?>
+
+<!DOCTYPE rfc SYSTEM "rfc2629-xhtml.ent">
+<?xml-stylesheet type='text/xsl' href='rfc2629.xslt' ?>
+
+<rfc
+      xmlns:xi="http://www.w3.org/2001/XInclude"
+      category="info"
+      docName="draft-ietf-xml2rfc-template-06"
+      ipr="trust200902"
+      obsoletes=""
+      updates=""
+      submissionType="IETF"
+      xml:lang="en"
+      tocInclude="true"
+      tocDepth="4"
+      symRefs="true"
+      sortRefs="true"
+      version="3">
+<front>
+
+  <title abbrev="Abbreviated Title">Dynamic Updates over TLS</title>
+  <seriesInfo name="Internet-Draft" value="draft-ietf-xml2rfc-template-06"/>
+
+  <author initials="Han." surname="Zhang" fullname="Han Zhang">
+  <organization>Salesforce</organization>
+  <address>
+  <postal>
+  <street></street>
+  <city>Herndon, VA</city>
+  <code></code>
+  <country>United States</country>
+  <region></region>
+  </postal>
+  <phone></phone>
+  <email>paras@salesforce.com</email>
+  <uri></uri>
+  </address>
+  </author>
+  <author initials="P." surname="Aras" fullname="Pallavi Aras">
+  <organization>Salesforce</organization>
+  <address>
+  <postal>
+  <street></street>
+  <city>San Francisco, CA</city>
+  <code></code>
+  <country>United States</country>
+  <region></region>
+  </postal>
+  <phone></phone>
+  <email>hzhang@salesforce.com</email>
+  <uri></uri>
+  </address>
+  </author>
+  <author initials="S." surname="Qi" fullname="Sidan">
+  <organization>Salesforce</organization>
+  <address>
+  <postal>
+  <street></street>
+  <city>San Francisco, CA</city>
+  <code></code>
+  <country>United States</country>
+  <region></region>
+  </postal>
+  <phone></phone>
+  <email>sqi@salesforce.com</email>
+  <uri></uri>
+  </address>
+  </author>
+
+
+  <date year="2021" month="May" day="20"/>
+
+
+  <area>Internet</area>
+  <workgroup>dprive</workgroup>
+  <keyword>DNS</keyword>
+  <keyword>operations</keyword>
+  <keyword>privacy</keyword>
+
+  <abstract>
+    <t>DNS dynamic updates are transmitted in clear text, allowing attackers the opportunity to collect the content of updates to a zone by eavesdropping on network connections. RFC3007 defines a means to secure dynamic updates, allowing only authorized sources to make changes to a zone's contents, but it does not add confidentiality. This document specifies the use of TLS, rather than clear text, to prevent zone content collection via passive monitoring of dynamic updates: dynamic updatedates over TLS (DUoT).
+    </t>
+  </abstract>
+</front>
+<middle>
+  <section numbered="true" toc="default">
+    <name>Introduction</name>
+    <t>DNS privacy vulnerabilities, are discussed in detail in <xref target="RFC7626"/>. Stub client to recursive resolver query privacy is now standards track for both DNS-over-TLS (DoT) <xref target="RFC7858" /> and DNS-over-HTTPS (DoH) <xref target="RFC8484"/>, and a proposal for DNS-over-QUIC is underway <xref target="I-D.ietf-dprive-dnsoquic"/>. There is ongoing work on DNS privacy requirements for exchanges between recursive resolvers and authoritative servers <xref target="I-D.ietf-dprive-phase2-requirements"/> (TODO add info about dot ALPN )</t>
+    <t>The contents of a zone could include sensitive information such as names of persons or customer coprporations. Best practice is not to use personal information for domain names, but many such domain names exist. <xref target="RFC5155"/> specifies NSEC3, a mechanism to provide measures against zone enumeration for DNSSEC signed zones, but it does not address data obtained outside zone enumeration. <xref target="I-D.draft-ietf-dprive-xfr-over-tls"/> prevents zone content collection via passive monitoring of zone transfers: XFR-over-TLS (XoT). However, besides XFR, a zone can also be updated by dynamic updates that is specified in <xref target="RFC2136"/>. 
+    </t>
+    <t>
+    <xref target="RFC3007"/> defines means to secure dynamic updates using TSIG  <xref target="RFC8945"/> or SIG(0)  <xref target="RFC2931" />, allowing only authorized sources to make changes to a zone's contents. Section 8.1.5 of NIST guide  <xref target="nist-guide"/> specifies restricting Dynamic Update transaction Entities using IP-based ACL.
+
+    <xref target="RFC2931"/> recommends default UDP transport for Dynamic Updates and has following recommendation for TCP usage. 
+   </t>
+    <t>
+    If the requestor used
+    TCP, then the response will be sent back on the requestor's open TCP
+    </t>
+    <t>
+    This document updates the recommendation of <xref target="RFC2931"/> to use DNS-over-TLS <xref target="RFC7858"/> to prevent zone content collection from passive monitoring of dynamic updates to a zone.
+    </t>
+  </section>
+  <section numbered="true" toc="default">
+    <name>Terminology</name>
+    <t>The key words &quot;MUST&quot;, &quot;MUST NOT&quot;, &quot;REQUIRED&quot;, &quot;SHALL&quot;, &quot;SHALL NOT&quot;, &quot;SHOULD&quot;,
+    &quot;SHOULD NOT&quot;, &quot;RECOMMENDED&quot;, &quot;NOT RECOMMENDED&quot;, &quot;MAY&quot;, and &quot;OPTIONAL&quot; in this
+    document are to be interpreted as described in BCP 14 <xref target="RFC2119"/> and
+    <xref target="RFC8174"/> when, and only when, they appear in all capitals, as shown here.
+    </t>
+    <t>Privacy terminology is as described in Section 3 of <xref target="RFC6973"/>.
+    </t>
+    <t>DNS terminology is as described in <xref target="RFC8499"/>. Note that as in <xref target="RFC8499"/>, the
+    terms 'primary master' refers to a server that is at the root of AXFR/IXFR depency graph and receives updates from UPDATE transation.
+    </t>
+    <t>Forwarding Server:  This is formally defing the servers described i n in <xref target="RFC2136"/>. for the
+    terms 'forwarding' refers to a secondary that forwards an UPDATE message upward toward the zone's
+    primary master server
+    </t>
+    <t>DNS terminology is as described in <xref target="RFC2136"/>. Note that as in <xref target="RFC2136"/>, the
+    terms 'forwarding' refers to a secondary that forwards an UPDATE message upward toward the zone's
+    primary master server
+    </t>
+    <t>DoT: DNS-over-TLS as specified in <xref target="RFC7858"/>
+    </t>
+    <t>Dynamic Update (DU): This is Dynamic Update as specified by <xref target="RFC2136"/> which can occur over UDP/TCP.
+    </t>
+    <t>Dynamic Update Requestor (DUR) : This is a new term introduced in this draft and formally defines the "Requestor" specified in section 4 of <xref target="RFC2136"/> .
+    </t>
+    <t>Dynamic Update ove TLS (DUoT): This is a new term introduced in this draft to specify Dyamic Update over TLS.
+    </t>
+
+  </section>
+  <section anchor="threat-model" numbered="true" toc="default">
+    <name> Dynamic Update threat model</name>
+    <t> <xref target="RFC2136"/> specifies that "An update transaction may be carried in a UDP datagram, if the request fits, or in a TCP connection". With dynamic updates over tls, all the dynamic updates should be transmitted in tcp. </t>
+    <t> For a dynamic update between two end points to be considered protected with DUoT all update requests and response for that zone MUST be sent over TLS connections where at a minimum:  </t>
+    <ul>
+    <li>the client MUST authenticate the server by use of an authentication domain name using a Strict Privacy Profile as described in <xref target="RFC8310"/></li>
+    </ul>
+    <t> The server MAY also require a valid TSIG/SIG(0) signature, but this alone is not sufficient to authenticate the client or server.   </t>
+  </section>
+  <section anchor="connection" numbered="true" toc="default">
+    <name> Dynamic Update connection changes</name>
+    <section numbered="true" toc="default">
+      <name>Dynamic Update</name>
+      <t><xref target="RFC2136"/> specifies that "An update transaction may be carried in a UDP datagram, if the request fits, or in a TCP connection". </t>
+        <figure align="center"><artwork align="center"><![CDATA[
+
+        Dynamic Update Requestor          Primary/Forwarding Server
+        |            DUR Request            |
+        | --------------------------------- |  UDP (or part of
+        | --------------------------------- |  a TCP session)
+        |           DUR Response            |
+
+
+            Figure 1. Dynamic Update Mechanism
+              
+        ]]></artwork></figure>
+    </section>
+     <section numbered="true" toc="default">
+      <name>Dynamic Update over TLS</name>
+      <t>MUST use TLS and reuse existing TCP connections.  TCP Fast Open , edns keep alive. Use "DOT ALPN. Use TLS 1.3. </t>
+        <figure align="center"><artwork align="center"><![CDATA[
+
+        Dynamic Update Requestor          Primary/Forwarding Server
+        |            DUR Request            |
+        | ----------------------------------|  TLS
+        |           DUR Response            |
+
+
+            Figure 2. Dynamic Update over TLS
+            
+        ]]></artwork></figure>
+    </section>
+  </section>
+  <section numbered="true" toc="default">
+    <name>Authentication</name>
+      <section numbered="true" toc="default">
+      <name>TSIG/SIG(0)</name>
+      <t>TSIG description</t>
+      </section>
+      <section numbered="true" toc="default">
+      <name>Opportunistic TLS</name>
+      </section>
+      <section numbered="true" toc="default">
+      <name>Mutual TLS</name>
+      </section>
+  </section>
+  <section numbered="true" toc="default">
+    <name>Forwarding</name>
+    <t>When a zone secondary forwards an UPDATE message upward toward the zone's primary server, the forwarder should try TLS first, then fall back to either UDP or TCP to forward the message, at the whim of the implementor.  </t>
+      <figure align="center"><artwork align="center"><![CDATA[
+
+      Dynamic Forwarding Server          Primary Server
+      |            DUR Request            |
+      | ----------------------------------|  TLS
+      |           DUR Response            |
+
+
+          Figure 3. Dynamic Update over TLS
+          
+       ]]></artwork></figure>
+  </section>
+  <section numbered="true" toc="default">
+  <name>Implementation Considerations</name>
+  <t> Reference implentation </t>
+  </section>
+
+  <section anchor="Acknowledgements" numbered="true" toc="default">
+  <name>Acknowledgements</name>
+  <t>Significant contributions to the document were made by:</t>
+  </section>
+<!-- Possibly a 'Contributors' section ... -->
+
+  <section anchor="IANA" numbered="true" toc="default">
+    <name>IANA Considerations</name>
+  </section>
+  <section anchor="Security" numbered="true" toc="default">
+    <name>Security Considerations</name>
+    
+  </section>
+</middle>  
+
+<back>
+  <references title="Normative References">
+  <?rfc include="https://xml2rfc.tools.ietf.org/public/rfc/bibxml3/reference.I-D.ietf-dprive-phase2-requirements.xml"?>
+  <?rfc include="https://xml2rfc.tools.ietf.org/public/rfc/bibxml3/reference.I-D.ietf-dprive-dnsoquic.xml"?>
+  <?rfc include="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.2119.xml"?>
+  <?rfc include="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.2136.xml"?>
+  <?rfc include="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.2931.xml"?>
+  <?rfc include="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.3007.xml"?>
+  <?rfc include="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.5155.xml"?>
+  <?rfc include="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.6973.xml"?>
+  <?rfc include="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.7626.xml"?>
+  <?rfc include="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.7858.xml"?>
+  <?rfc include="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.8174.xml"?>
+  <?rfc include="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.8310.xml"?>
+  <?rfc include="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.8484.xml"?>
+  <?rfc include="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.8499.xml"?>
+  <?rfc include="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.8945.xml"?>
+ <reference anchor='I-D.draft-ietf-dprive-xfr-over-tls'
+  target='https://xml2rfc.tools.ietf.org/public/rfc/bibxml3/reference.I-D.draft-ietf-dprive-xfr-over-tls-05.xml'>
+    <front>
+        <title>DNS Zone Transfer-over-TLS</title>
+    <author initials="W" surname="Toorop" fullname="Willem Toorop">
+  <organization/>
+  </author>
+  <author initials="S" surname="Dickinson" fullname="Sara Dickinson">
+  <organization/>
+  </author>
+  <author initials="S" surname="Sahib" fullname="Shivan Sahib">
+  <organization/>
+  </author>
+  <author initials="P" surname="Aras" fullname="Pallavi Aras">
+  <organization/>
+  </author>
+  <author initials="A" surname="Mankin" fullname="Allison Mankin">
+  <organization/>
+  </author>
+  <date month="January" day="20" year="2021"/>
+  <abstract>
+  <t>DNS zone transfers are transmitted in clear text, which gives attackers the opportunity to collect the content of a zone by eavesdropping on network connections. The DNS Transaction Signature (TSIG) mechanism is specified to restrict direct zone transfer to authorized clients only, but it does not add confidentiality. This document specifies use of TLS, rather then clear text, to prevent zone content collection via passive monitoring of zone transfers: XFR-over-TLS (XoT). Additionally, this specification updates RFC1995, RFC5936 and RFC7766.</t>
+  </abstract>
+    </front>
+  </reference>
+  <reference anchor='nist-guide'
+  target='https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-81-2.pdf'>
+    <front>
+        <title>Secure Domain Name System (DNS) Deployment Guide</title>
+        <author initials='R.' surname='Chandramouli' fullname='Ramaswamy Chandramouli'>
+            <organization>NIST</organization>
+        </author>
+        <author initials='S.' surname='Rose' fullname='Scott Rose'>
+            <organization>NIST</organization>
+        </author>
+        <date year='2013'/>
+    </front>
+</reference>
+</references>
+</back>
+</rfc>
